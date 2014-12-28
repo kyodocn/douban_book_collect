@@ -1,0 +1,59 @@
+#!/perl -w
+use strict;
+use LWP::Simple;
+
+main();
+sub main{
+my $bookList="book_title2.txt";
+
+open BOOKS,"<","$bookList" or die "couldn't open file $bookList:$!\n";
+  no strict "subs";
+  iterateBooks(BOOKS);
+ 
+
+}
+
+sub iterateBooks{
+	my $FH=shift;
+	
+	while(<$FH>){
+		my $url=createQuery($_);
+		 queryResultProcess($url);
+		#testone
+		print $url,"\n";
+		last;
+		
+	}
+}
+
+sub createQuery{
+	my $bookName=shift;
+	
+	my $queryUrl="http://book.douban.com/subject_search?search_text=$bookName&cat=1003";
+#	http://book.douban.com/subject_search?search_text=6%E5%8F%B7%E7%89%B9%E5%B7%A5&cat=1003
+   
+    return $queryUrl;
+	
+}
+
+sub queryResultProcess{
+	my $url=shift;
+	
+	my $source=get($url);
+        
+	open SOURCE ,"<",\$source;
+#       while(<SOURCE>){
+#          print $_,"\n";
+#       }
+	
+	use XML::LibXML;
+	my $parser=XML::LibXML->new();
+	no strict "subs";
+	my $dom=$parser->parse_html_fh(SOURCE);
+
+	my @items=$dom->findnodes('//table[@width=100%]/tr[@class=item]');
+	print for (@items);
+	
+}
+
+
